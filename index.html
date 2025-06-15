@@ -9,13 +9,11 @@
       text-align: center;
       padding: 20px;
     }
-
     #imageCanvas {
       border: 1px solid #ccc;
       max-width: 95vw;
       max-height: 85vh;
     }
-
     #buttonContainer {
       margin-top: 15px;
       display: flex;
@@ -23,7 +21,6 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-
     #coords {
       margin-top: 20px;
       font-size: 14px;
@@ -40,6 +37,7 @@
     <button id="prevBtn">이전</button>
     <button id="nextBtn">다음</button>
     <button id="resetBtn">초기화</button>
+    <button id="clearAllBtn">전체 초기화</button>
     <button id="copyBtn">복사</button>
     <button id="downloadBtn">CSV 다운로드</button>
   </div>
@@ -49,7 +47,7 @@
   <script>
     // ✅ 여기서 이미지 파일명만 수정하면 됨 (루트 폴더 기준)
     const imageList = [
-      "Height1.jpg", "Height2.jpg", "Height3.jpg", 
+      "Height1.jpg", "Height2.jpg", "Height3.jpg",
       "GaheunLee-KyougJinJeong-EunyoungYang2.png", "GaheunLee-KyougJinJeong-EunyoungYang.png",
       "GaheunLee-KyougJinJeong-EunyoungYang3.png", "169.1-GaheunLee.png",
       "EunjiSong-KyungjinJeong-GahunLee-EunyeongYang.png", "EunjiSong-KyungjinJeong-GahunLee-EunyeongYang-SuhyunHwang.png"
@@ -59,16 +57,12 @@
     const ctx = canvas.getContext("2d");
     const coordsDisplay = document.getElementById("coords");
 
+    const allPoints = {}; // 각 이미지별 좌표 저장
     let currentImageIndex = 0;
-    let points = [];
 
-    // 좌표 라벨: 바닥 1 + 모델 5명 * 6지점 = 최대 31개
     const labels = ["[공통] 바닥"];
     for (let i = 1; i <= 5; i++) {
-      labels.push(
-        `[${i}번 모델] 정수리`, `[${i}번 모델] 눈`, `[${i}번 모델] 어깨`,
-        `[${i}번 모델] 배꼽`, `[${i}번 모델] 가랑이`, `[${i}번 모델] 발끝`
-      );
+      labels.push(`[${i}번 모델] 정수리`, `[${i}번 모델] 눈`, `[${i}번 모델] 어깨`, `[${i}번 모델] 배꼽`, `[${i}번 모델] 가랑이`, `[${i}번 모델] 발끝`);
     }
 
     function loadImage(index) {
@@ -84,6 +78,7 @@
     }
 
     function drawPoints() {
+      const points = allPoints[imageList[currentImageIndex]] || [];
       points.forEach((pt, i) => {
         ctx.beginPath();
         ctx.arc(pt.x, pt.y, 5, 0, 2 * Math.PI);
@@ -95,27 +90,31 @@
       });
     }
 
+    function updateCoordsDisplay() {
+      const points = allPoints[imageList[currentImageIndex]] || [];
+      coordsDisplay.textContent = points
+        .map((pt, i) => `${labels[i] || i + 1}: (${pt.x.toFixed(1)}, ${pt.y.toFixed(1)})`)
+        .join("\n");
+    }
+
     canvas.addEventListener("click", (e) => {
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
       const x = (e.clientX - rect.left) * scaleX;
       const y = (e.clientY - rect.top) * scaleY;
-      points.push({ x, y });
+
+      const key = imageList[currentImageIndex];
+      if (!allPoints[key]) allPoints[key] = [];
+      allPoints[key].push({ x, y });
+
       loadImage(currentImageIndex);
       updateCoordsDisplay();
     });
 
-    function updateCoordsDisplay() {
-      coordsDisplay.textContent = points
-        .map((pt, i) => `${labels[i] || i + 1}: (${pt.x.toFixed(1)}, ${pt.y.toFixed(1)})`)
-        .join("\n");
-    }
-
     document.getElementById("prevBtn").addEventListener("click", () => {
       if (currentImageIndex > 0) {
         currentImageIndex--;
-        points = [];
         loadImage(currentImageIndex);
         updateCoordsDisplay();
       }
@@ -124,44 +123,52 @@
     document.getElementById("nextBtn").addEventListener("click", () => {
       if (currentImageIndex < imageList.length - 1) {
         currentImageIndex++;
-        points = [];
         loadImage(currentImageIndex);
         updateCoordsDisplay();
       }
     });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
-      points = [];
+      const key = imageList[currentImageIndex];
+      allPoints[key] = [];
+      loadImage(currentImageIndex);
+      updateCoordsDisplay();
+    });
+
+    document.getElementById("clearAllBtn").addEventListener("click", () => {
+      for (let key in allPoints) {
+        allPoints[key] = [];
+      }
       loadImage(currentImageIndex);
       updateCoordsDisplay();
     });
 
     document.getElementById("copyBtn").addEventListener("click", () => {
-      const fileName = imageList[currentImageIndex];
+      const key = imageList[currentImageIndex];
+      const points = allPoints[key] || [];
       const lines = points.map((pt, i) =>
         `${labels[i] || i + 1},${pt.x.toFixed(1)},${pt.y.toFixed(1)}`
       );
-      const output = `이미지 파일명: ${fileName}\n` + lines.join("\n");
+      const output = `이미지 파일명: ${key}\n` + lines.join("\n");
       navigator.clipboard.writeText(output).then(() => {
         alert("좌표가 복사되었습니다!");
       });
     });
 
     document.getElementById("downloadBtn").addEventListener("click", () => {
-      const fileName = imageList[currentImageIndex];
-      const header = "이미지 파일명,항목,X좌표,Y좌표\n";
-      const rows = points.map((pt, i) => `${fileName},${labels[i] || i + 1},${pt.x.toFixed(1)},${pt.y.toFixed(1)}`);
-      const csv = header + rows.join("\n");
-
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
+      const rows = [];
+      for (const key in allPoints) {
+        const pts = allPoints[key];
+        pts.forEach((pt, i) => {
+          rows.push([key, labels[i] || i + 1, pt.x.toFixed(1), pt.y.toFixed(1)]);
+        });
+      }
+      let csv = "이미지,항목,X좌표,Y좌표\n" + rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
       const a = document.createElement("a");
-      a.href = url;
-      a.download = `${fileName.replace(/\.[^/.]+$/, "")}_좌표.csv`;
-      document.body.appendChild(a);
+      a.href = URL.createObjectURL(blob);
+      a.download = "height_coordinates.csv";
       a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     });
 
     loadImage(currentImageIndex);
