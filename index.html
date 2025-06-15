@@ -4,68 +4,77 @@
   <meta charset="UTF-8" />
   <title>키 비교 도구</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
-    #canvas { border: 1px solid #ccc; max-width: 95vw; max-height: 90vh; }
-    #buttons { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-    #coords { white-space: pre-wrap; margin-top: 20px; font-size: 14px; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #imageCanvas {
+      border: 1px solid #ccc;
+      max-width: 95vw;
+      max-height: 85vh;
+    }
+
+    #buttonContainer {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    #coords {
+      margin-top: 20px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <h1>여러 인물 키 비교 도구 (기초 버전)</h1>
-  <input type="file" id="imgInput" accept="image/*">
-  <br><br>
-  <canvas id="canvas"></canvas>
-  <div id="buttons">
+  <h1>키 비교 좌표 측정 도구</h1>
+
+  <canvas id="imageCanvas"></canvas>
+
+  <div id="buttonContainer">
+    <button id="prevBtn">이전</button>
+    <button id="nextBtn">다음</button>
     <button id="resetBtn">초기화</button>
     <button id="copyBtn">복사</button>
   </div>
-  <div id="coords">좌표가 없습니다.</div>
+
+  <div id="coords">좌표가 표시됩니다</div>
 
   <script>
-    const canvas = document.getElementById("canvas");
+    // ✅ 여기서 이미지 파일명만 수정하면 됨 (루트 폴더 기준)
+    const imageList = [
+      "Comparison1.jpg",
+      "Comparison2.jpg"
+    ];
+
+    const canvas = document.getElementById("imageCanvas");
     const ctx = canvas.getContext("2d");
     const coordsDisplay = document.getElementById("coords");
-    const imgInput = document.getElementById("imgInput");
-    let img = new Image();
+
+    let currentImageIndex = 0;
     let points = [];
 
-    const pointLabels = ["바닥"];
+    // 좌표 라벨: 바닥 1 + 모델 5명 * 5지점 = 최대 26개
+    const labels = ["[공통] 바닥"];
     for (let i = 1; i <= 5; i++) {
-      pointLabels.push(`${i}-정수리`, `${i}-눈`, `${i}-어깨`, `${i}-배꼽`, `${i}-가랑이`, `${i}-발끝`);
+      labels.push(`[${i}번 모델] 정수리`, `[${i}번 모델] 눈`, `[${i}번 모델] 어깨`, `[${i}번 모델] 배꼽`, `[${i}번 모델] 가랑이`, `[${i}번 모델] 발끝`);
     }
 
-    imgInput.addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
-          drawPoints();
-        };
-        img.src = event.target.result;
+    function loadImage(index) {
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        drawPoints();
       };
-      reader.readAsDataURL(file);
-    });
-
-    canvas.addEventListener("click", function (e) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const x = (e.clientX - rect.left) * scaleX;
-      const y = (e.clientY - rect.top) * scaleY;
-      points.push({ x, y });
-      drawImageAndPoints();
-    });
-
-    function drawImageAndPoints() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-      drawPoints();
-      updateCoordsDisplay();
+      img.src = imageList[index];
     }
 
     function drawPoints() {
@@ -76,30 +85,63 @@
         ctx.fill();
         ctx.font = "16px Arial";
         ctx.fillStyle = "blue";
-        const label = pointLabels[i] || `${i + 1}`;
-        ctx.fillText(label, pt.x + 8, pt.y - 8);
+        ctx.fillText(labels[i] || `${i + 1}`, pt.x + 8, pt.y - 8);
       });
     }
 
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      points.push({ x, y });
+      loadImage(currentImageIndex);
+      updateCoordsDisplay();
+    });
+
     function updateCoordsDisplay() {
-      coordsDisplay.textContent = points.map((pt, i) =>
-        `${pointLabels[i] || i + 1}: (${pt.x.toFixed(1)}, ${pt.y.toFixed(1)})`
-      ).join("\\n");
+      coordsDisplay.textContent = points
+        .map((pt, i) => `${labels[i] || i + 1}: (${pt.x.toFixed(1)}, ${pt.y.toFixed(1)})`)
+        .join("\n");
     }
+
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      if (currentImageIndex > 0) {
+        currentImageIndex--;
+        points = [];
+        loadImage(currentImageIndex);
+        updateCoordsDisplay();
+      }
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", () => {
+      if (currentImageIndex < imageList.length - 1) {
+        currentImageIndex++;
+        points = [];
+        loadImage(currentImageIndex);
+        updateCoordsDisplay();
+      }
+    });
 
     document.getElementById("resetBtn").addEventListener("click", () => {
       points = [];
-      drawImageAndPoints();
+      loadImage(currentImageIndex);
+      updateCoordsDisplay();
     });
 
     document.getElementById("copyBtn").addEventListener("click", () => {
-      const text = points.map((pt, i) =>
-        `${pointLabels[i] || i + 1}: (${pt.x.toFixed(1)}, ${pt.y.toFixed(1)})`
-      ).join("\\n");
-      navigator.clipboard.writeText(text).then(() => {
+      const fileName = imageList[currentImageIndex];
+      const lines = points.map((pt, i) =>
+        `${labels[i] || i + 1},${pt.x.toFixed(1)},${pt.y.toFixed(1)}`
+      );
+      const output = `이미지 파일명: ${fileName}\n` + lines.join("\n");
+      navigator.clipboard.writeText(output).then(() => {
         alert("좌표가 복사되었습니다!");
       });
     });
+
+    loadImage(currentImageIndex);
   </script>
 </body>
 </html>
