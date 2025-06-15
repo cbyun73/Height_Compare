@@ -41,6 +41,7 @@
     <button id="nextBtn">다음</button>
     <button id="resetBtn">초기화</button>
     <button id="copyBtn">복사</button>
+    <button id="downloadBtn">CSV 다운로드</button>
   </div>
 
   <div id="coords">좌표가 표시됩니다</div>
@@ -61,10 +62,13 @@
     let currentImageIndex = 0;
     let points = [];
 
-    // 좌표 라벨: 바닥 1 + 모델 5명 * 5지점 = 최대 26개
+    // 좌표 라벨: 바닥 1 + 모델 5명 * 6지점 = 최대 31개
     const labels = ["[공통] 바닥"];
     for (let i = 1; i <= 5; i++) {
-      labels.push(`[${i}번 모델] 정수리`, `[${i}번 모델] 눈`, `[${i}번 모델] 어깨`, `[${i}번 모델] 배꼽`, `[${i}번 모델] 가랑이`, `[${i}번 모델] 발끝`);
+      labels.push(
+        `[${i}번 모델] 정수리`, `[${i}번 모델] 눈`, `[${i}번 모델] 어깨`,
+        `[${i}번 모델] 배꼽`, `[${i}번 모델] 가랑이`, `[${i}번 모델] 발끝`
+      );
     }
 
     function loadImage(index) {
@@ -141,6 +145,23 @@
       navigator.clipboard.writeText(output).then(() => {
         alert("좌표가 복사되었습니다!");
       });
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const fileName = imageList[currentImageIndex];
+      const header = "이미지 파일명,항목,X좌표,Y좌표\n";
+      const rows = points.map((pt, i) => `${fileName},${labels[i] || i + 1},${pt.x.toFixed(1)},${pt.y.toFixed(1)}`);
+      const csv = header + rows.join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fileName.replace(/\.[^/.]+$/, "")}_좌표.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     });
 
     loadImage(currentImageIndex);
