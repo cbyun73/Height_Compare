@@ -6,20 +6,21 @@
   <style>
     body {
       font-family: sans-serif;
-      max-width: 800px;
+      max-width: 900px;
       margin: 20px auto;
       text-align: center;
+      position: relative;
     }
     input {
       margin: 5px;
       padding: 5px;
       width: 180px;
     }
-    img {
-      max-width: 100%;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-      cursor: crosshair;
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
     }
     .output {
       margin-top: 20px;
@@ -29,6 +30,16 @@
       margin-top: 10px;
       font-size: 0.9em;
       color: #555;
+      white-space: pre-line;
+    }
+    #wrapper {
+      position: relative;
+      display: inline-block;
+    }
+    #uploadedImage {
+      max-width: 600px;
+      height: auto;
+      display: block;
     }
   </style>
 </head>
@@ -48,11 +59,12 @@
     <input type="file" id="imageUpload" accept="image/*">
   </div>
 
-  <canvas id="canvas" style="display: none;"></canvas>
-  <img id="uploadedImage" alt="비교 이미지">
+  <div id="wrapper">
+    <canvas id="canvas"></canvas>
+    <img id="uploadedImage" alt="비교 이미지">
+  </div>
 
   <div class="coords" id="clickInfo"></div>
-
   <div class="output" id="resultText">※ 기준 인물과 대상 인물의 정수리-발끝을 순서대로 클릭하세요.</div>
 
   <script>
@@ -60,6 +72,8 @@
     const imageUpload = document.getElementById('imageUpload');
     const resultText = document.getElementById('resultText');
     const clickInfo = document.getElementById('clickInfo');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
     let points = [];
 
@@ -70,15 +84,33 @@
       const reader = new FileReader();
       reader.onload = function(event) {
         uploadedImage.src = event.target.result;
+        points = [];
+        clickInfo.innerText = "";
+        resultText.innerText = "※ 기준 인물과 대상 인물의 정수리-발끝을 순서대로 클릭하세요.";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       };
       reader.readAsDataURL(file);
     });
 
+    uploadedImage.addEventListener('load', function() {
+      canvas.width = uploadedImage.width;
+      canvas.height = uploadedImage.height;
+    });
+
     uploadedImage.addEventListener('click', function(e) {
       const rect = uploadedImage.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const scaleX = uploadedImage.width / rect.width;
+      const scaleY = uploadedImage.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
       points.push({ x, y });
+
+      // draw red dot
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = "red";
+      ctx.fill();
 
       if (points.length === 1) {
         clickInfo.innerText = `① 기준 인물 정수리 클릭됨 (${x.toFixed(1)}, ${y.toFixed(1)})`;
@@ -100,7 +132,6 @@
 
         const basePixelHeight = Math.abs(baseBottom - baseTop);
         const targetPixelHeight = Math.abs(targetBottom - targetTop);
-
         const ratio = targetPixelHeight / basePixelHeight;
         const targetHeight = baseHeight * ratio;
 
@@ -112,6 +143,7 @@
         `;
       } else {
         points = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         resultText.innerText = "※ 클릭이 초기화되었습니다. 다시 시작하세요.";
         clickInfo.innerText = "";
       }
