@@ -3,25 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <title>키 비교 도구</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>AI 키 비교 도구 (비공식)</h1>
-  <div>
+  <h1>키 비교 도구</h1>
+  <div class="controls">
+    <label>기준 인물 수:
+      <select id="referenceCount">
+        <option value="1">1명</option>
+        <option value="2">2명</option>
+      </select>
+    </label>
+    <input type="number" id="ref1Height" placeholder="기준 인물1 키 (cm)">
+    <input type="number" id="ref2Height" placeholder="기준 인물2 키 (cm)">
+  </div>
+  <div class="upload">
     <input type="file" id="imageUpload" accept="image/*">
-    <br>
-    <label>기준 인물 키 (cm):</label>
-    <input type="number" id="baseHeight1" placeholder="예: 179.5">
-    <input type="number" id="baseHeight2" placeholder="선택사항">
   </div>
   <div id="wrapper">
     <canvas id="canvas"></canvas>
-    <img id="uploadedImage" />
+    <img id="uploadedImage" src="" alt="업로드 이미지">
   </div>
   <div class="output">
-    <p>추정된 키 (예상치): <span id="heightEstimate"></span></p>
+    <div>예측 키 (대상 1): <span id="predictedHeight1">-</span> cm</div>
+    <div>예측 키 (대상 2): <span id="predictedHeight2">-</span> cm</div>
   </div>
-  <div class="coords" id="coordsDisplay">좌표를 찍어주세요</div>
-  <script src="script.js"></script>
+  <div class="coords" id="coords"></div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const uploadedImage = document.getElementById("uploadedImage");
+    const coordsDisplay = document.getElementById("coords");
+
+    let points = [];
+
+    function updateCanvasSize() {
+      canvas.width = uploadedImage.naturalWidth;
+      canvas.height = uploadedImage.naturalHeight;
+    }
+
+    uploadedImage.onload = () => {
+      updateCanvasSize();
+      drawPoints();
+    };
+
+    document.getElementById("imageUpload").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          uploadedImage.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+        points = [];
+        document.getElementById("predictedHeight1").textContent = "-";
+        document.getElementById("predictedHeight2").textContent = "-";
+        coordsDisplay.textContent = "";
+      }
+    });
+
+    canvas.addEventListener("click", function (e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+
+      if (points.length >= 4) points = [];
+      points.push({ x, y });
+      drawPoints();
+      updateCoordsDisplay();
+      if (points.length === 4) calculateHeight();
+    });
+
+    function drawPoints() {
+      updateCanvasSize();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(uploadedImage, 0, 0);
+      points.forEach((pt, i) => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = "red";
+        ctx.fill();
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "blue";
+        ctx.fillText(i < 2 ? `기준${i+1}` : `대상${i-1}`, pt.x + 8, pt.y - 8);
+      });
+    }
+
+    function updateCoordsDisplay() {
+      coordsDisplay.textContent = points.map((pt, i) => {
+        const label = i < 2 ? `기준${i + 1}` : `대상${i - 1}`;
+        return `${label}: (${pt.x.toFixed(1)}, ${pt.y.toFixed(1)})`;
+      }).join("\n");
+    }
+
+    function calculateHeight() {
+      const refCount = parseInt(document.getElementById("referenceCount").value, 10);
+      const y1 = points[0].y;
+      const y2 = points[1].y;
+      const y3 = points[2].y;
+      const y4 = points[3].y;
+
+      const ref1 = parseFloat(document.getElementById("ref1Height").value);
+      const ref2 = parseFloat(document.getElementById("ref2Height").value);
+
+      let scale;
+      if (refCount === 1 || isNaN(ref2)) {
+        scale = ref1 / Math.abs(y1 - y2);
+      } else {
+        const avgRefHeight = (ref1 + ref2) / 2;
+        const avgRefPixels = (Math.abs(y1 - y2) + Math.abs(y2 - y1)) / 2;
+        scale = avgRefHeight / avgRefPixels;
+      }
+
+      const height1 = Math.abs(y3 - y4) * scale;
+      document.getElementById("predictedHeight1").textContent = height1.toFixed(1);
+      document.getElementById("predictedHeight2").textContent = "-";
+    }
+
+    // 초기 사이즈 동기화
+    window.addEventListener('load', updateCanvasSize);
+  </script>
 </body>
 </html>
