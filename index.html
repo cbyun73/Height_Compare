@@ -3,80 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>키 비교 도구</title>
-
-  <!-- 외부 CSS 불러오기 -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- 이미지 및 캔버스 스타일 덮어쓰기 -->
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 900px;
-      margin: 20px auto;
-      text-align: center;
-      position: relative;
-    }
-
-    input {
-      margin: 5px;
-      padding: 5px;
-      width: 180px;
-    }
-
-    #wrapper {
-      position: relative;
-      display: inline-block;
-    }
-
-    #uploadedImage {
-      max-width: 600px;
-      width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
-
-    canvas {
-      max-width: 600px;
-      width: 100%;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      position: absolute;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-    }
-
-    .output {
-      margin-top: 10px;
-      font-size: 0.9em;
-    }
-
-    .coords {
-      font-size: 0.8em;
-      color: #555;
-      white-space: pre-line;
-    }
-  </style>
 </head>
 <body>
   <h1>키 비교 도구</h1>
 
   <div class="controls">
-    <input type="file" id="imageUpload" accept="image/*">
-    <br>
-    <input type="number" id="refHeight1" placeholder="기준 인물 1 키(cm)">
-    <input type="number" id="refTop1" placeholder="기준 인물 1 머리 위치(px)">
-    <input type="number" id="refBottom1" placeholder="기준 인물 1 발 위치(px)">
-    <br>
-    <input type="number" id="refHeight2" placeholder="기준 인물 2 키(cm)">
-    <input type="number" id="refTop2" placeholder="기준 인물 2 머리 위치(px)">
-    <input type="number" id="refBottom2" placeholder="기준 인물 2 발 위치(px)">
-    <br>
-    <input type="number" id="measureTop" placeholder="측정 인물 머리 위치(px)">
-    <input type="number" id="measureBottom" placeholder="측정 인물 발 위치(px)">
-    <br>
+    <input type="file" id="imageUpload" accept="image/*"><br>
+
+    <input type="number" id="baseHeight1" placeholder="기준 인물 1 키(cm)">
+    <input type="number" id="head1" placeholder="기준 인물 1 머리 위치(px)">
+    <input type="number" id="foot1" placeholder="기준 인물 1 발 위치(px)"><br>
+
+    <input type="number" id="baseHeight2" placeholder="기준 인물 2 키(cm)">
+    <input type="number" id="head2" placeholder="기준 인물 2 머리 위치(px)">
+    <input type="number" id="foot2" placeholder="기준 인물 2 발 위치(px)"><br>
+
+    <input type="number" id="targetHead" placeholder="측정 인물 머리 위치(px)">
+    <input type="number" id="targetFoot" placeholder="측정 인물 발 위치(px)">
+    
     <button onclick="calculateHeight()">키 계산</button>
   </div>
 
@@ -85,8 +30,10 @@
     <canvas id="canvas"></canvas>
   </div>
 
-  <div class="output" id="outputText"></div>
-  <div class="coords" id="coordsDisplay"></div>
+  <div class="output">
+    <div id="heightEstimate"></div>
+    <div class="coords" id="coordsDisplay"></div>
+  </div>
 
   <script src="script.js"></script>
 </body>
