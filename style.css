@@ -12,6 +12,21 @@ input {
   width: 180px;
 }
 
+#wrapper {
+  position: relative;
+  display: inline-block;
+  overflow: auto;          /* ✅ 스크롤 가능하도록 설정 */
+  max-height: 90vh;        /* ✅ 브라우저 높이에 맞게 제한 */
+  border: 1px solid #ccc;
+}
+
+#uploadedImage {
+  max-width: 600px;
+  max-height: 90vh;        /* ✅ 세로 길이 제한 */
+  height: auto;
+  display: block;
+}
+
 #canvas {
   position: absolute;
   top: 0;
@@ -19,20 +34,9 @@ input {
   pointer-events: none;
 }
 
-#wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-#uploadedImage {
-  max-width: 600px;
-  height: auto;
-  display: block;
-}
-
 .output {
   margin-top: 20px;
-  font-size: 1em;
+  font-size: 1.1em;
 }
 
 .coords {
