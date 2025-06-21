@@ -3,151 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <title>키 비교 도구</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 900px;
-      margin: 20px auto;
-      text-align: center;
-      position: relative;
-    }
-    input {
-      margin: 5px;
-      padding: 5px;
-      width: 180px;
-    }
-    #canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-    }
-    .output {
-      margin-top: 5px;
-      font-size: 0.8em;
-    }
-    .coords {
-      margin-top: 5px;
-      font-size: 0.65em;
-      color: #555;
-      white-space: pre-line;
-    }
-    #wrapper {
-      position: relative;
-      display: inline-block;
-    }
-    #uploadedImage {
-      max-width: 320px;
-      height: auto;
-      display: block;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>키 비교 도구 (정수리-발끝 기준)</h2>
-
+  <h1>AI 키 비교 도구 (비공식)</h1>
   <div>
-    <label>기준 인물 이름: <input type="text" id="baseName" placeholder="예: 정경진"></label><br>
-    <label>기준 키(cm): <input type="number" id="baseHeight" placeholder="예: 179.5"></label>
-  </div>
-
-  <div style="margin-top: 10px;">
-    <label>대상 인물 이름: <input type="text" id="targetName" placeholder="예: 이가흔"></label>
-  </div>
-
-  <div style="margin-top: 10px;">
     <input type="file" id="imageUpload" accept="image/*">
+    <br>
+    <label>기준 인물 키 (cm):</label>
+    <input type="number" id="baseHeight1" placeholder="예: 179.5">
+    <input type="number" id="baseHeight2" placeholder="선택사항">
   </div>
-
   <div id="wrapper">
     <canvas id="canvas"></canvas>
-    <img id="uploadedImage" alt="비교 이미지">
+    <img id="uploadedImage" />
   </div>
-
-  <div class="coords" id="clickInfo"></div>
-  <div class="output" id="resultText">※ 기준 인물과 대상 인물의 정수리-발끝을 순서대로 클릭하세요.</div>
-
-  <script>
-    const uploadedImage = document.getElementById('uploadedImage');
-    const imageUpload = document.getElementById('imageUpload');
-    const resultText = document.getElementById('resultText');
-    const clickInfo = document.getElementById('clickInfo');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-
-    let points = [];
-
-    imageUpload.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        uploadedImage.src = event.target.result;
-        points = [];
-        clickInfo.innerText = "";
-        resultText.innerText = "※ 기준 인물과 대상 인물의 정수리-발끝을 순서대로 클릭하세요.";
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    uploadedImage.addEventListener('load', function() {
-      canvas.width = uploadedImage.width;
-      canvas.height = uploadedImage.height;
-    });
-
-    uploadedImage.addEventListener('click', function(e) {
-      const rect = uploadedImage.getBoundingClientRect();
-      const scaleX = uploadedImage.width / rect.width;
-      const scaleY = uploadedImage.height / rect.height;
-      const x = (e.clientX - rect.left) * scaleX;
-      const y = (e.clientY - rect.top) * scaleY;
-
-      points.push({ x, y });
-
-      // draw red dot
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "red";
-      ctx.fill();
-
-      if (points.length === 1) {
-        clickInfo.innerText = `① 기준 인물 정수리 클릭됨 (${x.toFixed(1)}, ${y.toFixed(1)})`;
-      } else if (points.length === 2) {
-        clickInfo.innerText += `\n② 기준 인물 발끝 클릭됨 (${x.toFixed(1)}, ${y.toFixed(1)})`;
-      } else if (points.length === 3) {
-        clickInfo.innerText += `\n③ 대상 인물 정수리 클릭됨 (${x.toFixed(1)}, ${y.toFixed(1)})`;
-      } else if (points.length === 4) {
-        clickInfo.innerText += `\n④ 대상 인물 발끝 클릭됨 (${x.toFixed(1)}, ${y.toFixed(1)})`;
-
-        const baseName = document.getElementById('baseName').value || "기준 인물";
-        const targetName = document.getElementById('targetName').value || "대상 인물";
-        const baseHeight = parseFloat(document.getElementById('baseHeight').value);
-
-        const baseTop = points[0].y;
-        const baseBottom = points[1].y;
-        const targetTop = points[2].y;
-        const targetBottom = points[3].y;
-
-        const basePixelHeight = Math.abs(baseBottom - baseTop);
-        const targetPixelHeight = Math.abs(targetBottom - targetTop);
-        const ratio = targetPixelHeight / basePixelHeight;
-        const targetHeight = baseHeight * ratio;
-
-        resultText.innerHTML = `
-          📏 기준 인물 (${baseName}): ${baseHeight}cm<br>
-          📐 기준 픽셀 높이: ${basePixelHeight.toFixed(2)}<br>
-          🎯 대상 인물 (${targetName}) 픽셀 높이: ${targetPixelHeight.toFixed(2)}<br>
-          <b>👤 대상 예측 키: ${targetHeight.toFixed(2)}cm</b>
-        `;
-      } else {
-        points = [];
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        resultText.innerText = "※ 클릭이 초기화되었습니다. 다시 시작하세요.";
-        clickInfo.innerText = "";
-      }
-    });
-  </script>
+  <div class="output">
+    <p>추정된 키 (예상치): <span id="heightEstimate"></span></p>
+  </div>
+  <div class="coords" id="coordsDisplay">좌표를 찍어주세요</div>
+  <script src="script.js"></script>
 </body>
 </html>
