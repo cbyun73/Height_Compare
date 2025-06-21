@@ -1,65 +1,49 @@
-/* 기본 바디 스타일 */
 body {
   font-family: sans-serif;
+  max-width: 900px;
   margin: 20px auto;
   text-align: center;
   position: relative;
-  max-width: 100%;
-  overflow-x: hidden;
-  background-color: #fff;
 }
 
-/* 이미지와 캔버스를 감싸는 래퍼 */
-#wrapper {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-  overflow: auto;
-}
-
-/* 업로드된 이미지 스타일 */
-#uploadedImage {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  border: 1px solid #ccc;
-}
-
-/* 좌표 찍는 캔버스 스타일 */
-canvas {
-  max-width: 600px;
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-}
-
-/* 입력 필드 스타일 */
 input {
   margin: 5px;
   padding: 5px;
   width: 180px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* 결과 출력 영역 */
+#canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+#wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+#uploadedImage {
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .output {
   margin-top: 20px;
   font-size: 1em;
 }
 
-/* 좌표 출력용 텍스트 박스 */
 .coords {
   margin-top: 10px;
-  font-size: 0.85em;
+  font-size: 0.9em;
   color: #555;
   white-space: pre-line;
-  background: #f7f7f7;
-  padding: 10px;
-  border: 1px dashed #aaa;
-  width: 90%;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  border-radius: 6px;
 }
