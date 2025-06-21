@@ -13,28 +13,23 @@ input {
   font-size: 13px;
 }
 
-#canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2; /* 캔버스를 이미지 위로 올림 */
-  max-width: 600px;
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 #wrapper {
   position: relative;
   display: inline-block;
 }
 
-#uploadedImage {
-  max-width: 600px;
+#uploadedImage,
+#canvas {
   width: 100%;
   height: auto;
   display: block;
-  z-index: 1;
+  pointer-events: auto;
+}
+
+#canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .output {
