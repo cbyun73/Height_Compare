@@ -9,23 +9,23 @@ let points = [];
 document.getElementById('imageUpload').addEventListener('change', function(e) {
   const reader = new FileReader();
   reader.onload = function(event) {
+    image.onload = function() {
+      // 이미지 로드 후 canvas 크기 자동 설정
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      drawPoints();
+    };
     image.src = event.target.result;
   };
   reader.readAsDataURL(e.target.files[0]);
 });
 
-image.onload = function() {
-  canvas.width = image.width;
-  canvas.height = image.height;
-  canvas.style.width = image.width + "px";
-  canvas.style.height = image.height + "px";
-  drawPoints();
-};
-
 canvas.addEventListener('click', function(e) {
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
   points.push({ x, y });
   drawPoints();
   updateDisplay();
