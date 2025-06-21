@@ -15,6 +15,7 @@ document.getElementById('imageUpload').addEventListener('change', function(e) {
 });
 
 image.onload = function () {
+  // 이미지가 브라우저에서 보여지는 실제 크기 기준으로 canvas 설정
   const displayWidth = image.clientWidth;
   const displayHeight = image.clientHeight;
 
@@ -38,7 +39,7 @@ canvas.addEventListener('click', function(e) {
 
 function drawPoints() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);  // 중요: canvas 크기에 맞춰 이미지 다시 그림
   ctx.fillStyle = 'red';
   ctx.font = '16px Arial';
   points.forEach((pt, index) => {
