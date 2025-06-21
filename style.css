@@ -1,32 +1,31 @@
+/* 기본 바디 스타일 */
 body {
   font-family: sans-serif;
-  max-width: 900px;
   margin: 20px auto;
   text-align: center;
   position: relative;
+  max-width: 100%;
+  overflow-x: hidden;
+  background-color: #fff;
 }
 
-input {
-  margin: 5px;
-  padding: 5px;
-  width: 180px;
-}
-
+/* 이미지와 캔버스를 감싸는 래퍼 */
 #wrapper {
   position: relative;
   display: inline-block;
-  overflow: auto;          /* ✅ 스크롤 가능하도록 설정 */
-  max-height: 90vh;        /* ✅ 브라우저 높이에 맞게 제한 */
+  max-width: 100%;
+  overflow: auto;
+}
+
+/* 업로드된 이미지 스타일 */
+#uploadedImage {
+  max-width: 100%;
+  height: auto;
+  display: block;
   border: 1px solid #ccc;
 }
 
-#uploadedImage {
-  max-width: 600px;
-  max-height: 90vh;        /* ✅ 세로 길이 제한 */
-  height: auto;
-  display: block;
-}
-
+/* 좌표 찍는 캔버스 스타일 */
 #canvas {
   position: absolute;
   top: 0;
@@ -34,14 +33,32 @@ input {
   pointer-events: none;
 }
 
-.output {
-  margin-top: 20px;
-  font-size: 1.1em;
+/* 입력 필드 스타일 */
+input {
+  margin: 5px;
+  padding: 5px;
+  width: 180px;
+  font-size: 14px;
 }
 
+/* 결과 출력 영역 */
+.output {
+  margin-top: 20px;
+  font-size: 1em;
+}
+
+/* 좌표 출력용 텍스트 박스 */
 .coords {
   margin-top: 10px;
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: #555;
   white-space: pre-line;
+  background: #f7f7f7;
+  padding: 10px;
+  border: 1px dashed #aaa;
+  width: 90%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 6px;
 }
