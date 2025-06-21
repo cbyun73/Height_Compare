@@ -3,9 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>키 비교 도구</title>
+
+  <!-- 먼저 기본 CSS 불러오기 -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- 그 다음 직접 적용할 스타일 덮어쓰기 -->
+  <style>
+    canvas {
+      max-width: 600px;  /* 원하는 최대 폭 설정 */
+      width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
 </head>
-<body>
+  <body>
   <h1>키 비교 도구</h1>
   <div class="controls">
     <label>기준 인물 수:
