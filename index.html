@@ -8,21 +8,19 @@
 <body>
   <h1>키 비교 도구</h1>
 
+  <div class="instructions">
+    <p><strong>사용법:</strong><br>
+    1. 이미지를 업로드하세요.<br>
+    2. 기준 인물: 머리 → 발 클릭<br>
+    3. 비교 인물들: 각 인물 머리 → 발 클릭 (최대 4명)<br>
+    4. 결과는 아래에 자동 표시됩니다.<br>
+    5. 실수 시 초기화 버튼을 눌러 다시 시작할 수 있습니다.</p>
+  </div>
+
   <div class="controls">
-    <input type="file" id="imageUpload" accept="image/*"><br>
-
-    <input type="number" id="baseHeight1" placeholder="기준 인물 1 키(cm)">
-    <input type="number" id="head1" placeholder="기준 인물 1 머리 위치(px)">
-    <input type="number" id="foot1" placeholder="기준 인물 1 발 위치(px)"><br>
-
-    <input type="number" id="baseHeight2" placeholder="기준 인물 2 키(cm)">
-    <input type="number" id="head2" placeholder="기준 인물 2 머리 위치(px)">
-    <input type="number" id="foot2" placeholder="기준 인물 2 발 위치(px)"><br>
-
-    <input type="number" id="targetHead" placeholder="측정 인물 머리 위치(px)">
-    <input type="number" id="targetFoot" placeholder="측정 인물 발 위치(px)">
-    
-    <button onclick="calculateHeight()">키 계산</button>
+    <input type="file" id="imageUpload" accept="image/*">
+    <input type="number" id="baseHeight" placeholder="기준 인물 키 (cm)">
+    <button id="resetBtn">초기화</button>
   </div>
 
   <div id="wrapper">
@@ -31,8 +29,8 @@
   </div>
 
   <div class="output">
-    <div id="heightEstimate"></div>
-    <div class="coords" id="coordsDisplay"></div>
+    <h3>결과</h3>
+    <pre id="resultsDisplay">아직 클릭된 점이 없습니다.</pre>
   </div>
 
   <script src="script.js"></script>
