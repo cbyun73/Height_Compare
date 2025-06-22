@@ -1,45 +1,43 @@
 const image = document.getElementById('uploadedImage');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-const coordsDisplay = document.getElementById('coordsDisplay');
-const heightDisplay = document.getElementById('heightEstimate');
+const baseHeightInput = document.getElementById('baseHeight');
+const resultsDisplay = document.getElementById('resultsDisplay');
+const resetBtn = document.getElementById('resetBtn');
 
 let points = [];
 
-document.getElementById('imageUpload').addEventListener('change', function(e) {
+document.getElementById('imageUpload').addEventListener('change', function (e) {
   const reader = new FileReader();
-  reader.onload = function(event) {
+  reader.onload = function (event) {
     image.src = event.target.result;
   };
   reader.readAsDataURL(e.target.files[0]);
 });
 
 image.onload = function () {
-  // 이미지가 브라우저에서 보여지는 실제 크기 기준으로 canvas 설정
-  const displayWidth = image.clientWidth;
-  const displayHeight = image.clientHeight;
-
-  canvas.width = displayWidth;
-  canvas.height = displayHeight;
-
-  canvas.style.width = displayWidth + "px";
-  canvas.style.height = displayHeight + "px";
-
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  canvas.style.width = image.width + "px";
+  canvas.style.height = image.height + "px";
   drawPoints();
 };
 
-canvas.addEventListener('click', function(e) {
+canvas.addEventListener('click', function (e) {
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+  const scaleX = image.naturalWidth / rect.width;
+  const scaleY = image.naturalHeight / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+
   points.push({ x, y });
   drawPoints();
-  updateDisplay();
+  updateResults();
 });
 
 function drawPoints() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);  // 중요: canvas 크기에 맞춰 이미지 다시 그림
+  ctx.drawImage(image, 0, 0);
   ctx.fillStyle = 'red';
   ctx.font = '16px Arial';
   points.forEach((pt, index) => {
@@ -50,21 +48,42 @@ function drawPoints() {
   });
 }
 
-function updateDisplay() {
-  if (points.length < 2) {
-    coordsDisplay.textContent = '정수리와 발끝을 클릭하세요.';
+function updateResults() {
+  const baseHeight = parseFloat(baseHeightInput.value);
+  if (isNaN(baseHeight)) {
+    resultsDisplay.textContent = "기준 인물 키를 먼저 입력하세요.";
     return;
   }
 
-  const [top, bottom] = points;
-  const pixelHeight = Math.abs(bottom.y - top.y);
-  const base1 = parseFloat(document.getElementById('baseHeight1').value);
-  const base2 = parseFloat(document.getElementById('baseHeight2').value);
-  const avgBase = base2 ? (base1 + base2) / 2 : base1;
+  if (points.length < 2) {
+    resultsDisplay.textContent = "기준 인물의 머리와 발을 차례로 클릭하세요.";
+    return;
+  }
 
-  const scale = avgBase / pixelHeight;
-  const estHeight = Math.round(pixelHeight * scale * 10) / 10;
+  const baseTop = points[0].y;
+  const baseBottom = points[1].y;
+  const basePixelHeight = Math.abs(baseBottom - baseTop);
+  const pixelPerCm = basePixelHeight / baseHeight;
 
-  coordsDisplay.textContent = `정수리: (${top.x.toFixed(1)}, ${top.y.toFixed(1)})\n발끝: (${bottom.x.toFixed(1)}, ${bottom.y.toFixed(1)})`;
-  heightDisplay.textContent = `${estHeight} cm`;
+  let output = `📏 기준 인물 키: ${baseHeight}cm\n`;
+  output += `- 머리(y): ${baseTop.toFixed(1)}, 발(y): ${baseBottom.toFixed(1)}\n`;
+  output += `- 픽셀 높이: ${basePixelHeight.toFixed(1)}, 픽셀/cm: ${pixelPerCm.toFixed(3)}\n\n`;
+
+  const targetCount = Math.floor((points.length - 2) / 2);
+  for (let i = 0; i < targetCount; i++) {
+    const head = points[2 + i * 2].y;
+    const foot = points[3 + i * 2].y;
+    const pixelHeight = Math.abs(foot - head);
+    const cm = pixelHeight / pixelPerCm;
+    output += `👤 비교 인물 ${i + 1}: ${cm.toFixed(1)} cm (픽셀: ${pixelHeight.toFixed(1)})\n`;
+  }
+
+  resultsDisplay.textContent = output;
 }
+
+resetBtn.addEventListener('click', () => {
+  points = [];
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (image.src) ctx.drawImage(image, 0, 0);
+  resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
+});
