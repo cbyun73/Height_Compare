@@ -4,42 +4,71 @@ body {
   margin: 20px auto;
   text-align: center;
   position: relative;
+  background-color: #fff;
 }
 
-input {
+h1 {
+  margin-bottom: 10px;
+}
+
+.instructions {
+  background: #f2f2f2;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.controls {
+  margin-bottom: 10px;
+}
+
+input[type="file"],
+input[type="number"] {
   margin: 5px;
-  padding: 5px;
+  padding: 6px;
   width: 180px;
   font-size: 13px;
+}
+
+button {
+  padding: 6px 14px;
+  margin: 5px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 #wrapper {
   position: relative;
   display: inline-block;
+  margin-top: 10px;
 }
 
-#uploadedImage,
-#canvas {
+#uploadedImage {
+  max-width: 600px;
   width: 100%;
   height: auto;
   display: block;
-  pointer-events: auto;
 }
 
 #canvas {
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: none;
+  width: 100%;
+  height: auto;
 }
 
 .output {
   margin-top: 20px;
-  font-size: 1em;
-}
-
-.coords {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #555;
-  white-space: pre-line;
+  font-size: 14px;
+  white-space: pre-wrap;
+  background: #f9f9f9;
+  padding: 10px;
+  border: 1px dashed #aaa;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 6px;
 }
