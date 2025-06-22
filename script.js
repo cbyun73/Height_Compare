@@ -4,6 +4,7 @@ const ctx = canvas.getContext('2d');
 const baseHeightInput = document.getElementById('baseHeight');
 const resultsDisplay = document.getElementById('resultsDisplay');
 const resetBtn = document.getElementById('resetBtn');
+const copyBtn = document.getElementById('copyBtn');
 
 let points = [];
 
@@ -86,4 +87,16 @@ resetBtn.addEventListener('click', () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
   resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
+});
+
+copyBtn.addEventListener('click', () => {
+  const text = resultsDisplay.textContent;
+  if (!text.trim()) {
+    alert("복사할 내용이 없습니다.");
+    return;
+  }
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("결과가 클립보드에 복사되었습니다.");
+  });
 });
