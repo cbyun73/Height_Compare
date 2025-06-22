@@ -90,13 +90,15 @@ resetBtn.addEventListener('click', () => {
 });
 
 copyBtn.addEventListener('click', () => {
-  const text = resultsDisplay.textContent;
-  if (!text.trim()) {
-    alert("복사할 내용이 없습니다.");
+  const currentResult = resultsDisplay.innerText || resultsDisplay.textContent;
+  if (!currentResult.trim()) {
+    alert("복사할 결과가 없습니다.");
     return;
   }
 
-  navigator.clipboard.writeText(text).then(() => {
+  navigator.clipboard.writeText(currentResult).then(() => {
     alert("결과가 클립보드에 복사되었습니다.");
+  }).catch(() => {
+    alert("복사에 실패했습니다. 브라우저 보안 설정을 확인하세요.");
   });
 });
