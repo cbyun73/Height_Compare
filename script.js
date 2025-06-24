@@ -1,15 +1,15 @@
+
 const image = document.getElementById('uploadedImage');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const baseHeightInput = document.getElementById('baseHeight');
 const resultsDisplay = document.getElementById('resultsDisplay');
 const resetBtn = document.getElementById('resetBtn');
-const copyBtn = document.getElementById('copyBtn');
-const lockFootBtn = document.getElementById('lockFootBtn');
+const unifyFootBtn = document.getElementById('unifyFootBtn');
 
 let points = [];
-let lockFoot = false;
-let lockedFootY = null;
+let unifyFoot = false;
+let baseFootY = null;
 
 document.getElementById('imageUpload').addEventListener('change', function (e) {
   const reader = new FileReader();
@@ -32,18 +32,14 @@ canvas.addEventListener('click', function (e) {
   const scaleX = image.naturalWidth / rect.width;
   const scaleY = image.naturalHeight / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
-  let y = (e.clientY - rect.top) * scaleY;
+  const y = (e.clientY - rect.top) * scaleY;
 
-  // 발끝 통일 활성화 시, 비교 인물의 짝수 클릭(발끝)은 기준 발 위치로 고정
-  if (lockFoot && points.length >= 2 && (points.length % 2 === 1)) {
-    y = lockedFootY;
-  }
-
-  points.push({ x, y });
-
-  // 기준 인물 머리/발 모두 입력된 후 발 고정 모드면, 발 좌표를 저장
-  if (points.length === 2 && lockFoot) {
-    lockedFootY = points[1].y;
+  if (unifyFoot && points.length > 1 && (points.length - 2) % 2 === 0) {
+    // 기준 인물 이후 비교 인물일 경우 머리만 클릭, 발은 고정
+    points.push({ x, y }); // 머리
+    points.push({ x, y: baseFootY }); // 발은 고정값으로 삽입
+  } else {
+    points.push({ x, y });
   }
 
   drawPoints();
@@ -78,16 +74,15 @@ function updateResults() {
   const baseTop = points[0].y;
   const baseBottom = points[1].y;
   const basePixelHeight = Math.abs(baseBottom - baseTop);
-  if (basePixelHeight === 0) {
-    resultsDisplay.textContent = "기준 인물 발 좌표가 잘못되었거나 중복되었습니다.";
-    return;
-  }
-
   const pixelPerCm = basePixelHeight / baseHeight;
 
-  let output = `📏 기준 인물 키: ${baseHeight}cm\n`;
-  output += `- 머리(y): ${baseTop.toFixed(1)}, 발(y): ${baseBottom.toFixed(1)}\n`;
-  output += `- 픽셀 높이: ${basePixelHeight.toFixed(1)}, 픽셀/cm: ${pixelPerCm.toFixed(3)}\n\n`;
+  let output = `📏 기준 인물 키: ${baseHeight}cm
+`;
+  output += `- 머리(y): ${baseTop.toFixed(1)}, 발(y): ${baseBottom.toFixed(1)}
+`;
+  output += `- 픽셀 높이: ${basePixelHeight.toFixed(1)}, 픽셀/cm: ${pixelPerCm.toFixed(3)}
+
+`;
 
   const targetCount = Math.floor((points.length - 2) / 2);
   for (let i = 0; i < targetCount; i++) {
@@ -95,33 +90,39 @@ function updateResults() {
     const foot = points[3 + i * 2].y;
     const pixelHeight = Math.abs(foot - head);
     const cm = pixelHeight / pixelPerCm;
-    output += `👤 비교 인물 ${i + 1}: ${cm.toFixed(1)} cm (픽셀: ${pixelHeight.toFixed(1)})\n`;
+    output += `👤 비교 인물 ${i + 1}:
+- 머리(y): ${head.toFixed(1)}, 발(y): ${foot.toFixed(1)}
+- 픽셀: ${pixelHeight.toFixed(1)} → 예측 키: ${cm.toFixed(1)} cm
+
+`;
   }
 
-  resultsDisplay.textContent = output;
+  resultsDisplay.textContent = output.trim();
 }
 
 resetBtn.addEventListener('click', () => {
   points = [];
-  lockedFootY = null;
-  lockFoot = false;
-  lockFootBtn.disabled = false;
-  lockFootBtn.textContent = "발끝 좌표 통일";
-
+  baseFootY = null;
+  unifyFoot = false;
+  unifyFootBtn.disabled = false;
+  resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
-  resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
 });
 
-copyBtn.addEventListener('click', () => {
-  const text = resultsDisplay.textContent;
-  navigator.clipboard.writeText(text).then(() => {
+unifyFootBtn.addEventListener('click', () => {
+  if (points.length < 2) {
+    resultsDisplay.textContent = "기준 인물의 머리와 발을 먼저 클릭하세요.";
+    return;
+  }
+  unifyFoot = true;
+  baseFootY = points[1].y;
+  unifyFootBtn.disabled = true;
+  resultsDisplay.textContent = "발끝 좌표 통일 모드 활성화됨. 이후 비교 인물은 머리만 클릭하세요.";
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(resultsDisplay.textContent).then(() => {
     alert("결과가 복사되었습니다!");
   });
-});
-
-lockFootBtn.addEventListener('click', () => {
-  lockFoot = true;
-  lockFootBtn.disabled = true;
-  lockFootBtn.textContent = "발끝 좌표 통일됨";
 });
