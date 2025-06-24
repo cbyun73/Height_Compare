@@ -34,12 +34,14 @@ canvas.addEventListener('click', function (e) {
   const x = (e.clientX - rect.left) * scaleX;
   let y = (e.clientY - rect.top) * scaleY;
 
-  if (lockFoot && (points.length % 2 === 1)) {
+  // 발끝 통일 활성화 시, 비교 인물의 짝수 클릭(발끝)은 기준 발 위치로 고정
+  if (lockFoot && points.length >= 2 && (points.length % 2 === 1)) {
     y = lockedFootY;
   }
 
   points.push({ x, y });
 
+  // 기준 인물 머리/발 모두 입력된 후 발 고정 모드면, 발 좌표를 저장
   if (points.length === 2 && lockFoot) {
     lockedFootY = points[1].y;
   }
@@ -76,6 +78,11 @@ function updateResults() {
   const baseTop = points[0].y;
   const baseBottom = points[1].y;
   const basePixelHeight = Math.abs(baseBottom - baseTop);
+  if (basePixelHeight === 0) {
+    resultsDisplay.textContent = "기준 인물 발 좌표가 잘못되었거나 중복되었습니다.";
+    return;
+  }
+
   const pixelPerCm = basePixelHeight / baseHeight;
 
   let output = `📏 기준 인물 키: ${baseHeight}cm\n`;
@@ -97,6 +104,10 @@ function updateResults() {
 resetBtn.addEventListener('click', () => {
   points = [];
   lockedFootY = null;
+  lockFoot = false;
+  lockFootBtn.disabled = false;
+  lockFootBtn.textContent = "발끝 좌표 통일";
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
   resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
