@@ -7,14 +7,17 @@
 </head>
 <body>
   <h1>키 비교 도구</h1>
-
   <div class="controls">
     <input type="file" id="imageUpload" accept="image/*"><br>
-
     <input type="number" id="baseHeight" placeholder="기준 인물 키(cm)">
     <button id="resetBtn">초기화</button>
     <button id="copyBtn">결과 복사</button>
-    <button id="lockFootBtn">발끝 좌표 통일</button> <!-- ✅ 추가됨 -->
+    <button id="lockFootBtn">발끝 좌표 통일</button>
+
+    <!-- 설명 문구는 이 아래 -->
+    <p style="font-size: 13px; margin-top: 4px; color: #555;">
+    기준 인물의 발 좌표를 고정하여, 이후 비교 인물들의 발 위치를 자동 통일합니다.
+    </p>
   </div>
 
   <div id="wrapper">
