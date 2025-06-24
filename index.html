@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>키 비교 도구</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>키 비교 도구</h1>
 
-  <div class="controls">
-    <input type="file" id="imageUpload" accept="image/*"><br>
+  <div class="instructions">
+    기준 인물 머리/발 좌표를 먼저 클릭한 뒤 비교 인물 머리/발 좌표를 순서대로 클릭하세요.  
+    <br /><b>※ “발끝 좌표 통일” 버튼을 클릭하면 이후 비교 인물은 정수리만 클릭하면 됩니다.</b>
+  </div>
 
-    <input type="number" id="baseHeight" placeholder="기준 인물 키(cm)">
+  <div class="controls">
+    <input type="file" id="imageUpload" accept="image/*"><br />
+    <input type="number" id="baseHeight" placeholder="기준 인물 키 (cm)">
+    <button id="lockFootBtn">발끝 좌표 통일</button>
     <button id="resetBtn">초기화</button>
     <button id="copyBtn">결과 복사</button>
   </div>
 
   <div id="wrapper">
-    <img id="uploadedImage" src="" alt="">
+    <img id="uploadedImage" src="" alt="" />
     <canvas id="canvas"></canvas>
   </div>
 
