@@ -5,8 +5,11 @@ const baseHeightInput = document.getElementById('baseHeight');
 const resultsDisplay = document.getElementById('resultsDisplay');
 const resetBtn = document.getElementById('resetBtn');
 const copyBtn = document.getElementById('copyBtn');
+const lockFootBtn = document.getElementById('lockFootBtn');
 
 let points = [];
+let lockFoot = false;
+let lockedFootY = null;
 
 document.getElementById('imageUpload').addEventListener('change', function (e) {
   const reader = new FileReader();
@@ -29,9 +32,18 @@ canvas.addEventListener('click', function (e) {
   const scaleX = image.naturalWidth / rect.width;
   const scaleY = image.naturalHeight / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
-  const y = (e.clientY - rect.top) * scaleY;
+  let y = (e.clientY - rect.top) * scaleY;
+
+  if (lockFoot && (points.length % 2 === 1)) {
+    y = lockedFootY;
+  }
 
   points.push({ x, y });
+
+  if (points.length === 2 && lockFoot) {
+    lockedFootY = points[1].y;
+  }
+
   drawPoints();
   updateResults();
 });
@@ -84,21 +96,21 @@ function updateResults() {
 
 resetBtn.addEventListener('click', () => {
   points = [];
+  lockedFootY = null;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
   resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
 });
 
 copyBtn.addEventListener('click', () => {
-  const currentResult = resultsDisplay.innerText || resultsDisplay.textContent;
-  if (!currentResult.trim()) {
-    alert("복사할 결과가 없습니다.");
-    return;
-  }
-
-  navigator.clipboard.writeText(currentResult).then(() => {
-    alert("결과가 클립보드에 복사되었습니다.");
-  }).catch(() => {
-    alert("복사에 실패했습니다. 브라우저 보안 설정을 확인하세요.");
+  const text = resultsDisplay.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("결과가 복사되었습니다!");
   });
+});
+
+lockFootBtn.addEventListener('click', () => {
+  lockFoot = true;
+  lockFootBtn.disabled = true;
+  lockFootBtn.textContent = "발끝 좌표 통일됨";
 });
