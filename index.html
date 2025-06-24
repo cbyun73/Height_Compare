@@ -2,32 +2,38 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>키 비교 도구</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 키 비교 도구</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>키 비교 도구</h1>
+  <h1>AI 키 비교 도구</h1>
 
-  <div class="instructions">
-    기준 인물 머리/발 좌표를 먼저 클릭한 뒤 비교 인물 머리/발 좌표를 순서대로 클릭하세요.  
-    <br /><b>※ “발끝 좌표 통일” 버튼을 클릭하면 이후 비교 인물의 발끝 좌표는 기준 인물의 발끝 좌표와 동일하게 적용됩니다.</b>
-  </div>
+  <div class="container">
+    <div class="image-section">
+      <input type="file" id="imageUpload" accept="image/*" />
+      <canvas id="imageCanvas"></canvas>
+    </div>
 
-  <div class="controls">
-    <input type="file" id="imageUpload" accept="image/*"><br />
-    <input type="number" id="baseHeight" placeholder="기준 인물 키 (cm)">
-    <button id="unifyFootBtn">발끝 좌표 통일</button>
-    <button id="resetBtn">초기화</button>
-    <button id="copyBtn">결과 복사</button>
-  </div>
+    <div class="controls">
+      <div class="reference-section">
+        <h2>① 기준 인물</h2>
+        <label for="referenceHeight">키(cm):</label>
+        <input type="number" id="referenceHeight" />
+        <p>아래 이미지에서 기준 인물의 머리 → 발 순으로 클릭하세요.</p>
+        <button id="resetButton">초기화</button>
+      </div>
 
-  <div id="wrapper">
-    <img id="uploadedImage" src="" alt="" />
-    <canvas id="canvas"></canvas>
-  </div>
+      <div class="targets-section">
+        <h2>② 비교 대상 인물들</h2>
+        <p>대상 인물의 머리 → 발을 순서대로 클릭하세요. 여러 명 입력 가능.</p>
+      </div>
+    </div>
 
-  <div class="output">
-    <div id="resultsDisplay">좌표를 클릭해 주세요.</div>
+    <div class="results">
+      <h2>결과</h2>
+      <ul id="resultsList"></ul>
+    </div>
   </div>
 
   <script src="script.js"></script>
