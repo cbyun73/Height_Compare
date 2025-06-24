@@ -1,38 +1,28 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI 키 비교 도구</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>키 비교 도구</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>AI 키 비교 도구</h1>
-  <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
-    <div style="flex: 1 1 500px; max-width: 700px;">
-      <input type="file" id="imageUpload" accept="image/*" style="margin-bottom: 10px;" />
-      <canvas id="imageCanvas" style="max-width: 100%; border: 1px solid #ccc;"></canvas>
-    </div>
+  <h1>키 비교 도구</h1>
 
-    <div style="flex: 1 1 300px; min-width: 280px;">
-      <div>
-        <h2>① 기준 인물</h2>
-        <label for="referenceHeight">키(cm):</label>
-        <input type="number" id="referenceHeight" />
-        <p>기준 인물의 머리 → 발을 클릭하세요.</p>
-        <button id="resetButton">초기화</button>
-      </div>
-      <hr />
-      <div>
-        <h2>② 비교 대상 인물들</h2>
-        <p>대상 인물의 머리 → 발을 순서대로 클릭하세요.</p>
-      </div>
-      <hr />
-      <div>
-        <h2>결과</h2>
-        <ul id="resultsList"></ul>
-      </div>
-    </div>
+  <div class="controls">
+    <input type="file" id="imageUpload" accept="image/*"><br>
+
+    <input type="number" id="baseHeight" placeholder="기준 인물 키(cm)">
+    <button id="resetBtn">초기화</button>
+    <button id="copyBtn">결과 복사</button>
+  </div>
+
+  <div id="wrapper">
+    <img id="uploadedImage" src="" alt="">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div class="output">
+    <div id="resultsDisplay">좌표를 클릭해 주세요.</div>
   </div>
 
   <script src="script.js"></script>
