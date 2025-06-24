@@ -1,127 +1,91 @@
-const image = document.getElementById('uploadedImage');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const baseHeightInput = document.getElementById('baseHeight');
-const resultsDisplay = document.getElementById('resultsDisplay');
-const resetBtn = document.getElementById('resetBtn');
-const copyBtn = document.getElementById('copyBtn');
-const lockFootBtn = document.getElementById('lockFootBtn');
+const imageUpload = document.getElementById('imageUpload');
+const imageCanvas = document.getElementById('imageCanvas');
+const ctx = imageCanvas.getContext('2d');
 
-let points = [];
-let lockFoot = false;
-let lockedFootY = null;
+let image = new Image();
+let clickStage = 'referenceHead';
+let referenceHeight = 0;
+let referenceHeadY = null;
+let referenceFootY = null;
+let targets = [];
+let currentTarget = {};
 
-document.getElementById('imageUpload').addEventListener('change', function (e) {
+imageUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
   const reader = new FileReader();
   reader.onload = function (event) {
+    image.onload = function () {
+      imageCanvas.width = image.width;
+      imageCanvas.height = image.height;
+      ctx.drawImage(image, 0, 0);
+    };
     image.src = event.target.result;
   };
-  reader.readAsDataURL(e.target.files[0]);
+  if (file) {
+    reader.readAsDataURL(file);
+  }
 });
 
-image.onload = function () {
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
-  canvas.style.width = image.width + "px";
-  canvas.style.height = image.height + "px";
-  drawPoints();
-};
+imageCanvas.addEventListener('click', (e) => {
+  const rect = imageCanvas.getBoundingClientRect();
+  const y = e.clientY - rect.top;
 
-canvas.addEventListener('click', function (e) {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = image.naturalWidth / rect.width;
-  const scaleY = image.naturalHeight / rect.height;
-  const x = (e.clientX - rect.left) * scaleX;
-  let y = (e.clientY - rect.top) * scaleY;
-
-  // 발끝 통일 활성화 시, 비교 인물의 짝수 클릭(발끝)은 기준 발 위치로 고정
-  if (lockFoot && points.length >= 2 && (points.length % 2 === 1)) {
-    y = lockedFootY;
+  switch (clickStage) {
+    case 'referenceHead':
+      referenceHeadY = y;
+      clickStage = 'referenceFoot';
+      alert('기준 인물의 발 지점을 클릭하세요.');
+      break;
+    case 'referenceFoot':
+      referenceFootY = y;
+      referenceHeight = parseFloat(document.getElementById('referenceHeight').value);
+      if (isNaN(referenceHeight) || referenceHeight <= 0) {
+        alert('기준 인물의 실제 키를 입력해주세요.');
+        clickStage = 'referenceHead';
+        referenceHeadY = null;
+        referenceFootY = null;
+        break;
+      }
+      clickStage = 'targetHead';
+      alert('이제 비교할 인물의 머리 지점을 클릭하세요.');
+      break;
+    case 'targetHead':
+      currentTarget = { headY: y };
+      clickStage = 'targetFoot';
+      alert('해당 인물의 발 지점을 클릭하세요.');
+      break;
+    case 'targetFoot':
+      currentTarget.footY = y;
+      const refPixelHeight = Math.abs(referenceFootY - referenceHeadY);
+      const pxPerCm = referenceHeight / refPixelHeight;
+      const targetPixelHeight = Math.abs(currentTarget.footY - currentTarget.headY);
+      const estimatedHeight = Math.round(targetPixelHeight * pxPerCm * 10) / 10;
+      targets.push(estimatedHeight);
+      displayResults();
+      clickStage = 'targetHead';
+      alert('다음 인물의 머리 지점을 클릭하세요. (또는 초기화하려면 초기화 버튼 클릭)');
+      break;
   }
-
-  points.push({ x, y });
-
-  // 기준 인물 머리/발 모두 입력된 후 발 고정 모드면, 발 좌표를 저장
-  if (points.length === 2 && lockFoot) {
-    lockedFootY = points[1].y;
-  }
-
-  drawPoints();
-  updateResults();
 });
 
-function drawPoints() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function displayResults() {
+  const resultsList = document.getElementById('resultsList');
+  resultsList.innerHTML = '';
+  targets.forEach((height, index) => {
+    const li = document.createElement('li');
+    li.textContent = `대상 인물 ${index + 1}: 약 ${height}cm`;
+    resultsList.appendChild(li);
+  });
+}
+
+document.getElementById('resetButton').addEventListener('click', () => {
+  clickStage = 'referenceHead';
+  referenceHeadY = null;
+  referenceFootY = null;
+  referenceHeight = 0;
+  targets = [];
+  currentTarget = {};
   ctx.drawImage(image, 0, 0);
-  ctx.fillStyle = 'red';
-  ctx.font = '16px Arial';
-  points.forEach((pt, index) => {
-    ctx.beginPath();
-    ctx.arc(pt.x, pt.y, 5, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText(`${index + 1}`, pt.x + 8, pt.y - 8);
-  });
-}
-
-function updateResults() {
-  const baseHeight = parseFloat(baseHeightInput.value);
-  if (isNaN(baseHeight)) {
-    resultsDisplay.textContent = "기준 인물 키를 먼저 입력하세요.";
-    return;
-  }
-
-  if (points.length < 2) {
-    resultsDisplay.textContent = "기준 인물의 머리와 발을 차례로 클릭하세요.";
-    return;
-  }
-
-  const baseTop = points[0].y;
-  const baseBottom = points[1].y;
-  const basePixelHeight = Math.abs(baseBottom - baseTop);
-  if (basePixelHeight === 0) {
-    resultsDisplay.textContent = "기준 인물 발 좌표가 잘못되었거나 중복되었습니다.";
-    return;
-  }
-
-  const pixelPerCm = basePixelHeight / baseHeight;
-
-  let output = `📏 기준 인물 키: ${baseHeight}cm\n`;
-  output += `- 머리(y): ${baseTop.toFixed(1)}, 발(y): ${baseBottom.toFixed(1)}\n`;
-  output += `- 픽셀 높이: ${basePixelHeight.toFixed(1)}, 픽셀/cm: ${pixelPerCm.toFixed(3)}\n\n`;
-
-  const targetCount = Math.floor((points.length - 2) / 2);
-  for (let i = 0; i < targetCount; i++) {
-    const head = points[2 + i * 2].y;
-    const foot = points[3 + i * 2].y;
-    const pixelHeight = Math.abs(foot - head);
-    const cm = pixelHeight / pixelPerCm;
-    output += `👤 비교 인물 ${i + 1}: ${cm.toFixed(1)} cm (픽셀: ${pixelHeight.toFixed(1)})\n`;
-  }
-
-  resultsDisplay.textContent = output;
-}
-
-resetBtn.addEventListener('click', () => {
-  points = [];
-  lockedFootY = null;
-  lockFoot = false;
-  lockFootBtn.disabled = false;
-  lockFootBtn.textContent = "발끝 좌표 통일";
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (image.src) ctx.drawImage(image, 0, 0);
-  resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
-});
-
-copyBtn.addEventListener('click', () => {
-  const text = resultsDisplay.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    alert("결과가 복사되었습니다!");
-  });
-});
-
-lockFootBtn.addEventListener('click', () => {
-  lockFoot = true;
-  lockFootBtn.disabled = true;
-  lockFootBtn.textContent = "발끝 좌표 통일됨";
+  document.getElementById('resultsList').innerHTML = '';
+  alert('초기화되었습니다. 기준 인물의 머리 지점을 다시 클릭하세요.');
 });
