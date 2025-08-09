@@ -1,24 +1,25 @@
+/* ===== Global ===== */
 body {
   font-family: sans-serif;
-  max-width: 100%;        /* 전체 화면 활용 */
   margin: 20px auto;
   text-align: center;
-  position: relative;
-  background-color: #fff;
+  background: #fff;
+  max-width: 100%;
 }
 
-h1 {
-  margin-bottom: 10px;
-}
+h1 { margin-bottom: 10px; }
 
+/* 안내 박스(옵션) */
 .instructions {
   background: #f2f2f2;
   padding: 10px;
-  margin-bottom: 15px;
+  margin: 0 auto 15px;
   border-radius: 6px;
   font-size: 14px;
+  max-width: 900px;
 }
 
+/* ===== Controls ===== */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -41,44 +42,54 @@ button {
   font-size: 14px;
   cursor: pointer;
 }
+button:hover { background: #e6e6e6; }
 
-button:hover {
-  background-color: #e6e6e6;
-}
-
+/* ===== Stage (image + canvas) ===== */
 #wrapper {
   position: relative;
   display: inline-block;
   margin-top: 10px;
+  /* 캔버스가 커지도록 최대 폭 넉넉히 */
+  width: min(95vw, 1200px);
+  z-index: 2;          /* 출력 박스보다 위 레이어 */
 }
 
+/* 원본 <img>는 캔버스에만 그리므로 화면엔 숨김(레이아웃 영향 없음) */
 #uploadedImage {
-  max-width: 90vw;     /* 화면 너비 90%까지 확대 */
-  width: auto;         /* 가로 폭 자동 */
-  height: auto;        /* 비율 유지 */
   display: block;
-  margin: 0 auto;      /* 가운데 정렬 */
+  max-width: 100%;
+  height: auto;
+  visibility: hidden;  /* 공간은 유지, 겹침/왜곡 방지 */
 }
 
+/* 캔버스: 이미지 비율 그대로 확장 */
 #canvas {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;            /* top:0; right:0; bottom:0; left:0 */
+  width: 100%;
+  height: auto;        /* JS가 높이를 이미지에 맞춰 설정 */
   pointer-events: auto;
-  max-width: 90vw;     /* 이미지와 동일 비율 확대 */
-  height: auto;
   border: 1px solid #ccc;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
+/* ===== Results ===== */
 .output {
-  margin-top: 20px;
+  position: relative;
+  z-index: 1;          /* wrapper(2) 보다 아래 → 겹침 방지 */
+  margin: 20px auto 0;
   font-size: 14px;
   white-space: pre-wrap;
   background: #f9f9f9;
   padding: 10px;
   border: 1px dashed #aaa;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: min(900px, 95vw);
   border-radius: 6px;
+}
+
+/* 아주 작은 화면에서 버튼 줄바꿈 여유 */
+@media (max-width: 420px) {
+  input[type="number"] { width: 150px; }
+  button { padding: 6px 10px; }
 }
