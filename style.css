@@ -1,4 +1,4 @@
-/* ===== Global ===== */
+/* Global */
 body {
   font-family: sans-serif;
   margin: 20px auto;
@@ -9,17 +9,6 @@ body {
 
 h1 { margin-bottom: 10px; }
 
-/* 안내 박스(옵션) */
-.instructions {
-  background: #f2f2f2;
-  padding: 10px;
-  margin: 0 auto 15px;
-  border-radius: 6px;
-  font-size: 14px;
-  max-width: 900px;
-}
-
-/* ===== Controls ===== */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -28,11 +17,11 @@ h1 { margin-bottom: 10px; }
   margin-bottom: 10px;
 }
 
-input[type="file"],
-input[type="number"] {
+.controls input[type="file"],
+.controls input[type="number"] {
   margin: 5px;
   padding: 6px;
-  width: 180px;
+  width: 200px;
   font-size: 13px;
 }
 
@@ -44,40 +33,43 @@ button {
 }
 button:hover { background: #e6e6e6; }
 
-/* ===== Stage (image + canvas) ===== */
+.helper {
+  font-size: 13px; 
+  margin: 4px auto 0;
+  color: #555; 
+  text-align: left; 
+  max-width: 900px;
+}
+
+/* Stage */
 #wrapper {
   position: relative;
   display: inline-block;
   margin-top: 10px;
-  /* 캔버스가 커지도록 최대 폭 넉넉히 */
   width: min(95vw, 1200px);
-  z-index: 2;          /* 출력 박스보다 위 레이어 */
+  z-index: 2;  /* above output */
 }
 
-/* 원본 <img>는 캔버스에만 그리므로 화면엔 숨김(레이아웃 영향 없음) */
+/* Source <img> (hidden, only used for drawing) */
 #uploadedImage {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  visibility: hidden;  /* 공간은 유지, 겹침/왜곡 방지 */
+  display: none;
 }
 
-/* 캔버스: 이미지 비율 그대로 확장 */
+/* Canvas scales visually; internal pixels = image native size (set in JS) */
 #canvas {
-  position: absolute;
-  inset: 0;            /* top:0; right:0; bottom:0; left:0 */
-  width: 100%;
-  height: auto;        /* JS가 높이를 이미지에 맞춰 설정 */
-  pointer-events: auto;
+  display: block;
+  width: 100%;     /* visual scale */
+  height: auto;    /* keep aspect ratio */
   border: 1px solid #ccc;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
 
-/* ===== Results ===== */
+/* Results box (hidden until there is a message) */
 .output {
+  display: none;   /* hidden by default */
   position: relative;
-  z-index: 1;          /* wrapper(2) 보다 아래 → 겹침 방지 */
+  z-index: 1;      /* below wrapper */
   margin: 20px auto 0;
   font-size: 14px;
   white-space: pre-wrap;
@@ -88,8 +80,7 @@ button:hover { background: #e6e6e6; }
   border-radius: 6px;
 }
 
-/* 아주 작은 화면에서 버튼 줄바꿈 여유 */
 @media (max-width: 420px) {
-  input[type="number"] { width: 150px; }
+  .controls input[type="number"] { width: 160px; }
   button { padding: 6px 10px; }
 }
