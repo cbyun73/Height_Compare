@@ -1,33 +1,35 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>키 비교 도구</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Height Compare Tool</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>키 비교 도구</h1>
-  <div class="controls">
-    <input type="file" id="imageUpload" accept="image/*"><br>
-    <input type="number" id="baseHeight" placeholder="기준 인물 키(cm)">
-    <button id="resetBtn">초기화</button>
-    <button id="copyBtn">결과 복사</button>
-    <button id="lockFootBtn">발끝 좌표 통일</button>
+  <h1>Height Compare Tool</h1>
 
-    <!-- 설명 문구는 이 아래 -->
+  <div class="controls">
+    <input type="file" id="imageUpload" accept="image/*" /><br />
+    <input type="number" id="baseHeight" placeholder="Base person height (cm)" />
+    <button id="resetBtn">Reset</button>
+    <button id="copyBtn">Copy Results</button>
+    <button id="lockFootBtn">Lock Foot Y</button>
+
+    <!-- helper text -->
     <p style="font-size: 13px; margin-top: 4px; color: #555; text-align: left; max-width: 600px; margin: 4px auto;">
-    <b>[발끝 좌표 통일]</b> 버튼을 누르면 기준 인물의 발 좌표가 고정되어 이후 비교 인물의 발 위치가 자동으로 맞춰집니다.  
-    동일한 바닥 기준에서 키를 비교하고자 할 때 사용하세요.
+      <b>[Lock Foot Y]</b> fixes the base person’s foot Y‑coordinate so that all following
+      comparison subjects share the same foot level. Use this when you want to compare
+      heights on an identical floor baseline.
     </p>
   </div>
 
   <div id="wrapper">
-    <img id="uploadedImage" src="" alt="">
+    <img id="uploadedImage" src="" alt="" />
     <canvas id="canvas"></canvas>
   </div>
 
   <div class="output">
-    <div id="resultsDisplay">좌표를 클릭해 주세요.</div>
+    <div id="resultsDisplay">Click points on the image.</div>
   </div>
 
   <script src="script.js"></script>
