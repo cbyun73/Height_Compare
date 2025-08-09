@@ -1,8 +1,11 @@
 const image = document.getElementById('uploadedImage');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+
 const baseHeightInput = document.getElementById('baseHeight');
 const resultsDisplay = document.getElementById('resultsDisplay');
+const outputBox = document.querySelector('.output');
+
 const resetBtn = document.getElementById('resetBtn');
 const copyBtn = document.getElementById('copyBtn');
 const lockFootBtn = document.getElementById('lockFootBtn');
@@ -14,6 +17,7 @@ let lockedFootY = null;
 document.getElementById('imageUpload').addEventListener('change', function (e) {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
   reader.onload = function (event) {
     image.src = event.target.result;
@@ -22,33 +26,39 @@ document.getElementById('imageUpload').addEventListener('change', function (e) {
 });
 
 image.onload = function () {
-  // draw at native resolution, let CSS handle visual scale
+  // Internal pixel size = native image size
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
-  canvas.style.width = image.width + 'px';
-  canvas.style.height = image.height + 'px';
+
+  // Visual size by CSS only (keeps aspect ratio)
+  canvas.style.width = '100%';
+  canvas.style.height = 'auto';
+
   drawPoints();
   resultsDisplay.textContent = 'Click the head and foot of the base person in order.';
+  outputBox.style.display = 'block';
 };
 
 canvas.addEventListener('click', function (e) {
   if (!image.src) return;
 
   const rect = canvas.getBoundingClientRect();
-  const scaleX = image.naturalWidth / rect.width;
-  const scaleY = image.naturalHeight / rect.height;
-  const x = (e.clientX - rect.left) * scaleX;
-  let y = (e.clientY - rect.top) * scaleY;
 
-  // When "lock foot" is enabled, every even click for comparison persons (foot)
-  // aligns to the locked base foot Y.
+  // Map from displayed coords -> internal pixel coords
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  const x = (e.clientX - rect.left) * scaleX;
+  let y  = (e.clientY - rect.top)  * scaleY;
+
+  // When "lock foot" is enabled, every second click in a pair after base -> force foot Y
   if (lockFoot && points.length >= 2 && (points.length % 2 === 1)) {
     y = lockedFootY;
   }
 
   points.push({ x, y });
 
-  // After base head/foot are set, remember base foot Y when lock mode is on
+  // After base person (first 2 clicks), remember base foot in lock mode
   if (points.length === 2 && lockFoot) {
     lockedFootY = points[1].y;
   }
@@ -60,6 +70,7 @@ canvas.addEventListener('click', function (e) {
 function drawPoints() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
+
   ctx.fillStyle = 'red';
   ctx.font = '16px Arial';
   points.forEach((pt, index) => {
@@ -72,21 +83,26 @@ function drawPoints() {
 
 function updateResults() {
   const baseHeight = parseFloat(baseHeightInput.value);
+
   if (isNaN(baseHeight)) {
-    resultsDisplay.textContent = 'Enter the base person’s height first.';
+    resultsDisplay.textContent = "Enter the base person’s height first.";
+    outputBox.style.display = 'block';
     return;
   }
 
   if (points.length < 2) {
-    resultsDisplay.textContent = 'Click the head and foot of the base person in order.';
+    resultsDisplay.textContent = "Click the base person’s head and foot in order.";
+    outputBox.style.display = 'block';
     return;
   }
 
   const baseTop = points[0].y;
   const baseBottom = points[1].y;
   const basePixelHeight = Math.abs(baseBottom - baseTop);
+
   if (basePixelHeight === 0) {
-    resultsDisplay.textContent = 'Invalid base foot coordinate (duplicated or incorrect).';
+    resultsDisplay.textContent = "Invalid base foot coordinate (duplicated or incorrect).";
+    outputBox.style.display = 'block';
     return;
   }
 
@@ -106,6 +122,7 @@ function updateResults() {
   }
 
   resultsDisplay.textContent = output;
+  outputBox.style.display = 'block';
 }
 
 resetBtn.addEventListener('click', () => {
@@ -113,11 +130,13 @@ resetBtn.addEventListener('click', () => {
   lockedFootY = null;
   lockFoot = false;
   lockFootBtn.disabled = false;
-  lockFootBtn.textContent = 'Lock foot Y';
+  lockFootBtn.textContent = 'Lock Foot Y';
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
+
   resultsDisplay.textContent = 'Reset. Click again to mark points.';
+  outputBox.style.display = 'none';
 });
 
 copyBtn.addEventListener('click', () => {
