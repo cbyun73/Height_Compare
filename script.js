@@ -12,36 +12,43 @@ let lockFoot = false;
 let lockedFootY = null;
 
 document.getElementById('imageUpload').addEventListener('change', function (e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
   const reader = new FileReader();
   reader.onload = function (event) {
     image.src = event.target.result;
   };
-  reader.readAsDataURL(e.target.files[0]);
+  reader.readAsDataURL(file);
 });
 
 image.onload = function () {
+  // draw at native resolution, let CSS handle visual scale
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
-  canvas.style.width = image.width + "px";
-  canvas.style.height = image.height + "px";
+  canvas.style.width = image.width + 'px';
+  canvas.style.height = image.height + 'px';
   drawPoints();
+  resultsDisplay.textContent = 'Click the head and foot of the base person in order.';
 };
 
 canvas.addEventListener('click', function (e) {
+  if (!image.src) return;
+
   const rect = canvas.getBoundingClientRect();
   const scaleX = image.naturalWidth / rect.width;
   const scaleY = image.naturalHeight / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
   let y = (e.clientY - rect.top) * scaleY;
 
-  // 발끝 통일 활성화 시, 비교 인물의 짝수 클릭(발끝)은 기준 발 위치로 고정
+  // When "lock foot" is enabled, every even click for comparison persons (foot)
+  // aligns to the locked base foot Y.
   if (lockFoot && points.length >= 2 && (points.length % 2 === 1)) {
     y = lockedFootY;
   }
 
   points.push({ x, y });
 
-  // 기준 인물 머리/발 모두 입력된 후 발 고정 모드면, 발 좌표를 저장
+  // After base head/foot are set, remember base foot Y when lock mode is on
   if (points.length === 2 && lockFoot) {
     lockedFootY = points[1].y;
   }
@@ -52,7 +59,7 @@ canvas.addEventListener('click', function (e) {
 
 function drawPoints() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(image, 0, 0);
+  if (image.src) ctx.drawImage(image, 0, 0);
   ctx.fillStyle = 'red';
   ctx.font = '16px Arial';
   points.forEach((pt, index) => {
@@ -66,12 +73,12 @@ function drawPoints() {
 function updateResults() {
   const baseHeight = parseFloat(baseHeightInput.value);
   if (isNaN(baseHeight)) {
-    resultsDisplay.textContent = "기준 인물 키를 먼저 입력하세요.";
+    resultsDisplay.textContent = 'Enter the base person’s height first.';
     return;
   }
 
   if (points.length < 2) {
-    resultsDisplay.textContent = "기준 인물의 머리와 발을 차례로 클릭하세요.";
+    resultsDisplay.textContent = 'Click the head and foot of the base person in order.';
     return;
   }
 
@@ -79,23 +86,23 @@ function updateResults() {
   const baseBottom = points[1].y;
   const basePixelHeight = Math.abs(baseBottom - baseTop);
   if (basePixelHeight === 0) {
-    resultsDisplay.textContent = "기준 인물 발 좌표가 잘못되었거나 중복되었습니다.";
+    resultsDisplay.textContent = 'Invalid base foot coordinate (duplicated or incorrect).';
     return;
   }
 
-  const pixelPerCm = basePixelHeight / baseHeight;
+  const pxPerCm = basePixelHeight / baseHeight;
 
-  let output = `📏 기준 인물 키: ${baseHeight}cm\n`;
-  output += `- 머리(y): ${baseTop.toFixed(1)}, 발(y): ${baseBottom.toFixed(1)}\n`;
-  output += `- 픽셀 높이: ${basePixelHeight.toFixed(1)}, 픽셀/cm: ${pixelPerCm.toFixed(3)}\n\n`;
+  let output = `📏 Base height: ${baseHeight} cm\n`;
+  output += `- Head(y): ${baseTop.toFixed(1)}, Foot(y): ${baseBottom.toFixed(1)}\n`;
+  output += `- Pixel height: ${basePixelHeight.toFixed(1)}, px/cm: ${pxPerCm.toFixed(3)}\n\n`;
 
   const targetCount = Math.floor((points.length - 2) / 2);
   for (let i = 0; i < targetCount; i++) {
     const head = points[2 + i * 2].y;
     const foot = points[3 + i * 2].y;
     const pixelHeight = Math.abs(foot - head);
-    const cm = pixelHeight / pixelPerCm;
-    output += `👤 비교 인물 ${i + 1}: ${cm.toFixed(1)} cm (픽셀: ${pixelHeight.toFixed(1)})\n`;
+    const cm = pixelHeight / pxPerCm;
+    output += `👤 Person ${i + 1}: ${cm.toFixed(1)} cm (px: ${pixelHeight.toFixed(1)})\n`;
   }
 
   resultsDisplay.textContent = output;
@@ -106,22 +113,24 @@ resetBtn.addEventListener('click', () => {
   lockedFootY = null;
   lockFoot = false;
   lockFootBtn.disabled = false;
-  lockFootBtn.textContent = "발끝 좌표 통일";
+  lockFootBtn.textContent = 'Lock foot Y';
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (image.src) ctx.drawImage(image, 0, 0);
-  resultsDisplay.textContent = "초기화되었습니다. 다시 클릭하세요.";
+  resultsDisplay.textContent = 'Reset. Click again to mark points.';
 });
 
 copyBtn.addEventListener('click', () => {
-  const text = resultsDisplay.textContent;
+  const text = resultsDisplay.textContent || '';
   navigator.clipboard.writeText(text).then(() => {
-    alert("결과가 복사되었습니다!");
+    alert('Copied to clipboard!');
+  }).catch(() => {
+    alert('Copy failed. Select and copy manually.');
   });
 });
 
 lockFootBtn.addEventListener('click', () => {
   lockFoot = true;
   lockFootBtn.disabled = true;
-  lockFootBtn.textContent = "발끝 좌표 통일됨";
+  lockFootBtn.textContent = 'Foot Y locked';
 });
