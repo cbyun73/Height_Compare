@@ -9,27 +9,26 @@
   <h1>Height Compare Tool</h1>
 
   <div class="controls">
-    <input type="file" id="imageUpload" accept="image/*" /><br />
+    <input type="file" id="imageUpload" accept="image/*" />
     <input type="number" id="baseHeight" placeholder="Base person height (cm)" />
     <button id="resetBtn">Reset</button>
     <button id="copyBtn">Copy Results</button>
     <button id="lockFootBtn">Lock Foot Y</button>
 
-    <!-- helper text -->
-    <p style="font-size: 13px; margin-top: 4px; color: #555; text-align: left; max-width: 600px; margin: 4px auto;">
-      <b>[Lock Foot Y]</b> fixes the base person’s foot Y‑coordinate so that all following
-      comparison subjects share the same foot level. Use this when you want to compare
-      heights on an identical floor baseline.
+    <p class="helper">
+      <b>[Lock Foot Y]</b> fixes the base person’s foot Y‑coordinate so every next subject shares the same foot level.  
+      Use this when comparing heights on the same floor baseline.
     </p>
   </div>
 
   <div id="wrapper">
-    <img id="uploadedImage" src="" alt="" />
+    <!-- image element is used only as a drawing source; hidden in CSS -->
+    <img id="uploadedImage" alt="" />
     <canvas id="canvas"></canvas>
   </div>
 
   <div class="output">
-    <div id="resultsDisplay">Click points on the image.</div>
+    <div id="resultsDisplay">Click the head and foot of the base person in order.</div>
   </div>
 
   <script src="script.js"></script>
